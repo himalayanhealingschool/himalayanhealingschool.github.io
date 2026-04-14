@@ -206,9 +206,19 @@ footer{
 }
 footer a{color:var(--gold);text-decoration:none}
 
+canvas{max-width:100%}
+#cwCv{width:100%;max-width:300px;height:auto}
+
 @media(max-width:480px){
   .fg{grid-template-columns:1fr 1fr}
-.mixer{grid-template-columns:1fr 1fr}
+  .mixer{grid-template-columns:1fr 1fr}
+  .ctrl{gap:10px}
+  .btn-sm{padding:9px 14px;font-size:10px}
+  .btn-play{width:62px;height:62px}
+  main{padding:20px 12px 48px}
+  .player{padding:22px 16px}
+  .timer-row{gap:6px}
+  .t-btn{padding:5px 10px}
 }
 </style>
 </head>
@@ -247,7 +257,7 @@ footer a{color:var(--gold);text-decoration:none}
     </div>
     <div class="ctrl">
       <button class="btn btn-sm on" id="btnLoop">⟳ Loop On</button>
-      <button class="btn btn-play" id="btnPlay">▶</button>
+      <button class="btn btn-play" id="btnPlay"><svg id="playIcon" viewBox="0 0 16 16" width="22" height="22" fill="currentColor"><polygon points="4,2 14,8 4,14"/></svg></button>
       <button class="btn btn-sm" id="btnStop">■ Stop</button>
     </div>
     <div class="vol-row">
@@ -383,6 +393,8 @@ const CHAKRAS = [
 // ════════════════════════════════════════════════════════
 //  AUDIO ENGINE
 // ════════════════════════════════════════════════════════
+const ICON_PLAY='<svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor"><polygon points="4,2 14,8 4,14"/></svg>';
+const ICON_PAUSE='<svg viewBox="0 0 16 16" width="22" height="22" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>';
 let AC=null, masterG=null, analyser=null;
 let oscL=null, oscR=null;
 let playing=false, looping=true;
@@ -395,7 +407,7 @@ function ac(){
   if(!AC){
     AC=new(window.AudioContext||window.webkitAudioContext)();
     analyser=AC.createAnalyser(); analyser.fftSize=512;
-    masterG=AC.createGain(); masterG.gain.value=.7;
+    masterG=AC.createGain(); masterG.gain.value=+(document.getElementById('volMain').value||.7);
     masterG.connect(analyser); analyser.connect(AC.destination);
   }
   return AC;
@@ -405,7 +417,7 @@ function stopMain(log){
   if(log&&playing) addLog();
   [oscL,oscR].forEach(o=>{if(o){try{o.stop()}catch(e){}}});
   oscL=oscR=null; playing=false;
-  document.getElementById('btnPlay').textContent='▶';
+  document.getElementById('btnPlay').innerHTML=ICON_PLAY;
 }
 
 function playNow(hz,col,bin=false,bd=null){
@@ -428,12 +440,12 @@ function playNow(hz,col,bin=false,bd=null){
     oscL.connect(masterG); oscL.start();
   }
   playing=true;
-  document.getElementById('btnPlay').textContent='⏸';
+  document.getElementById('btnPlay').innerHTML=ICON_PAUSE;
 }
 
 function togglePlay(){
-  if(playing){ AC&&AC.suspend(); playing=false; document.getElementById('btnPlay').textContent='▶'; }
-  else if(AC&&AC.state==='suspended'){ AC.resume(); playing=true; document.getElementById('btnPlay').textContent='⏸'; }
+  if(playing){ AC&&AC.suspend(); playing=false; document.getElementById('btnPlay').innerHTML=ICON_PLAY; }
+  else if(AC&&AC.state==='suspended'){ AC.resume(); playing=true; document.getElementById('btnPlay').innerHTML=ICON_PAUSE; }
   else playNow(curHz,curCol,isBin,binD);
 }
 
@@ -751,10 +763,13 @@ document.getElementById('btnLoop').addEventListener('click',function(){
   looping=!looping; this.classList.toggle('on',looping);
   this.textContent=looping?'⟳ Loop On':'⟳ Loop';
 });
-document.getElementById('volMain').addEventListener('input',function(){
-  if(masterG) masterG.gain.value=+this.value;
-  this.style.setProperty('--p',+this.value*100+'%');
-});
+function onVolChange(){
+  const v=+document.getElementById('volMain').value;
+  if(masterG) masterG.gain.value=v;
+  document.getElementById('volMain').style.setProperty('--p',v*100+'%');
+}
+document.getElementById('volMain').addEventListener('input',onVolChange);
+document.getElementById('volMain').addEventListener('change',onVolChange);
 
 // Timer
 function clearTimer(){
