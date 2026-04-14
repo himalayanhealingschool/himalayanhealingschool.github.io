@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Sacred Sound Sanctuary</title>
+<!-- PWA -->
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#F7F0E4"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Sacred Sound"/>
+<link rel="apple-touch-icon" href="icon-192.png"/>
+<link rel="apple-touch-startup-image" href="icon-512.png"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Raleway:wght@200;300;400;500;600&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:       #F7F0E4;
+  --bg2:      #EDE4D0;
+  --card:     rgba(255,255,255,0.78);
+  --border:   rgba(160,110,45,0.22);
+  --gold:     #A8720E;
+  --gold2:    #C99230;
+  --gold-dim: rgba(168,114,14,0.10);
+  --cream:    #2C1508;
+  --muted:    rgba(44,21,8,0.50);
+  --sage:     #4A7B3E;
+  --rose:     #A85E48;
+  --glow:     0 4px 24px rgba(160,110,45,0.18);
+}
+
+body{font-family:'Raleway',sans-serif;background:var(--bg);color:var(--cream);min-height:100vh;overflow-x:hidden}
+
+/* ── CANVAS BG ── */
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.18}
+
+/* ── HEADER ── */
+header{
+  position:relative;z-index:10;
+  text-align:center;padding:28px 20px 18px;
+  background:linear-gradient(180deg,rgba(247,240,228,.98) 0%,rgba(247,240,228,.80) 100%);
+  border-bottom:1px solid var(--border);
+}
+.badge{font-size:10px;letter-spacing:4px;color:var(--gold);text-transform:uppercase;margin-bottom:10px}
+.om{font-size:28px;display:block;margin-bottom:6px;color:var(--gold);filter:drop-shadow(0 0 8px rgba(168,114,14,.5))}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(28px,5.5vw,52px);font-weight:300;letter-spacing:3px;line-height:1.1}
+h1 em{color:var(--gold);font-style:normal}
+.sub{font-size:11px;letter-spacing:2.5px;color:var(--muted);margin-top:8px}
+
+/* ── LAYOUT ── */
+main{position:relative;z-index:10;max-width:960px;margin:0 auto;padding:24px 16px 48px}
+
+.s-title{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--gold);text-align:center;margin-bottom:12px;font-weight:500}
+.divider{height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);margin:24px 0 20px}
+
+/* ── MOOD PRESETS ── */
+.moods{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px}
+.mood{
+  padding:10px 20px;background:var(--card);border:1px solid var(--border);
+  border-radius:100px;color:var(--muted);font-family:'Raleway',sans-serif;
+  font-size:11px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .25s
+}
+.mood:hover,.mood.on{background:var(--gold-dim);border-color:var(--gold);color:var(--gold)}
+
+/* ── PLAYER ── */
+.player{
+  background:var(--card);border:1px solid var(--border);border-radius:24px;
+  padding:28px 24px;text-align:center;margin-bottom:24px;
+  box-shadow:var(--glow),0 1px 0 rgba(255,255,255,.9) inset;
+  backdrop-filter:blur(10px);position:relative;overflow:hidden
+}
+.player::before{
+  content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:320px;height:320px;
+  background:radial-gradient(circle,rgba(168,114,14,.06) 0%,transparent 70%);
+  pointer-events:none
+}
+
+#vizCanvas{display:block;margin:0 auto 16px;border-radius:50%}
+
+.f-name{font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--gold);margin-top:6px;font-weight:500}
+.f-desc{
+  font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;
+  color:var(--muted);margin:8px auto 0;max-width:360px;line-height:1.5
+}
+.c-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:12px;font-size:11px;letter-spacing:2px;color:var(--muted);text-transform:uppercase
+}
+.c-dot{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+
+.ctrl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:24px;flex-wrap:wrap}
+.btn{cursor:pointer;border:none;font-family:'Raleway',sans-serif;transition:all .2s;border-radius:100px}
+.btn-play{
+  width:70px;height:70px;
+  background:linear-gradient(135deg,#C99230,#A05C20);
+  color:#FBF5E8;font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 20px rgba(160,110,45,.45)
+}
+.btn-play:hover{transform:scale(1.07);box-shadow:0 6px 32px rgba(160,110,45,.65)}
+.btn-sm{
+  padding:10px 22px;background:var(--gold-dim);border:1px solid var(--border);
+  color:var(--muted);font-size:11px;letter-spacing:1.5px
+}
+.btn-sm:hover{border-color:var(--gold);color:var(--cream)}
+.btn-sm.on{border-color:var(--gold);color:var(--gold);background:rgba(212,165,88,.2)}
+
+.vol-row{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:18px}
+.lbl{font-size:10px;letter-spacing:2px;color:var(--muted)}
+
+input[type=range]{
+  -webkit-appearance:none;width:130px;height:3px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,var(--gold) var(--p,70%),rgba(0,0,0,.10) var(--p,70%))
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--gold);box-shadow:0 0 6px rgba(212,165,88,.7)
+}
+
+.timer-row{display:flex;align-items:center;justify-content:center;gap:9px;margin-top:14px;flex-wrap:wrap}
+.t-num{font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:300;color:var(--gold);min-width:78px;text-align:center;letter-spacing:2px}
+.t-btn{
+  padding:6px 13px;background:transparent;border:1px solid var(--border);
+  color:var(--muted);font-size:10px;letter-spacing:1px;cursor:pointer;
+  border-radius:100px;font-family:'Raleway',sans-serif;transition:all .2s
+}
+.t-btn:hover{border-color:var(--gold);color:var(--cream)}
+.t-btn.sel{border-color:var(--gold);color:var(--gold)}
+
+/* ── FREQ GRID ── */
+.fg{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:8px;margin-bottom:18px}
+.fc{
+  background:var(--card);border:1px solid var(--border);border-radius:14px;
+  padding:14px 12px;cursor:pointer;transition:all .25s;position:relative;overflow:hidden
+}
+.fc::after{
+  content:'';position:absolute;inset:0;border-radius:14px;
+  background:radial-gradient(circle at top left,var(--cc,rgba(168,114,14,.10)) 0%,transparent 70%);
+  opacity:0;transition:opacity .3s
+}
+.fc:hover::after,.fc.on::after{opacity:1}
+.fc:hover{border-color:rgba(168,114,14,.4);transform:translateY(-2px)}
+.fc.on{border-color:var(--gold);box-shadow:0 2px 12px rgba(168,114,14,.18)}
+.fc-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.fc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.fc-lbl{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:500}
+.fc-int{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:12px;color:var(--muted);line-height:1.4}
+.fc-ch{font-size:9px;letter-spacing:1.5px;color:var(--muted);margin-top:6px;text-transform:uppercase;opacity:.6}
+.fav{
+  position:absolute;top:10px;right:10px;font-size:13px;cursor:pointer;
+  opacity:.3;transition:all .2s;z-index:5;background:none;border:none;color:inherit
+}
+.fav:hover,.fav.on{opacity:1;transform:scale(1.2)}
+
+
+/* ── NATURE MIXER ── */
+.mixer{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:18px}
+.mc{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center}
+.mc-icon{font-size:22px;margin-bottom:4px}
+.mc-name{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);font-weight:500;margin-bottom:8px}
+.mix-sl{
+  -webkit-appearance:none;width:100%;height:3px;border-radius:2px;outline:none;cursor:pointer;
+  background:linear-gradient(90deg,var(--sage) var(--p,0%),rgba(0,0,0,.10) var(--p,0%))
+}
+.mix-sl::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--sage);box-shadow:0 0 6px rgba(123,174,127,.6)
+}
+.mix-tog{
+  margin-top:10px;padding:5px 16px;background:transparent;
+  border:1px solid var(--border);color:var(--muted);font-size:10px;
+  letter-spacing:1px;cursor:pointer;border-radius:100px;
+  font-family:'Raleway',sans-serif;transition:all .2s
+}
+.mix-tog.on{border-color:var(--sage);color:var(--sage);background:rgba(123,174,127,.1)}
+
+/* ── CHAKRA WHEEL ── */
+.chakra-wrap{text-align:center;margin-bottom:20px}
+#cwCv{cursor:pointer;display:block;margin:0 auto}
+.cw-hint{font-size:11px;color:var(--muted);letter-spacing:2px;margin-top:10px}
+
+
+/* ── SESSION LOG ── */
+.slog-wrap{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:22px}
+.slog{list-style:none;max-height:160px;overflow-y:auto}
+.slog::-webkit-scrollbar{width:4px}
+.slog::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.slog li{
+  font-size:12px;color:var(--muted);padding:7px 0;
+  border-bottom:1px solid rgba(0,0,0,.07);
+  display:flex;justify-content:space-between;align-items:center
+}
+.slog li:last-child{border-bottom:none}
+.slog-t{color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:14px}
+.slog-empty{color:var(--muted);font-size:12px;font-style:italic;text-align:center;padding:18px;display:block}
+
+/* ── FOOTER ── */
+footer{
+  position:relative;z-index:10;text-align:center;
+  padding:24px 20px;border-top:1px solid var(--border);
+  font-size:11px;letter-spacing:2px;color:var(--muted);
+  background:rgba(237,228,208,.60);
+}
+footer a{color:var(--gold);text-decoration:none}
+
+@media(max-width:480px){
+  .fg{grid-template-columns:1fr 1fr}
+.mixer{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg"></canvas>
+
+<header>
+  <div class="badge">Himalayan Healing School</div>
+  <span class="om">ॐ</span>
+  <h1>Sacred <em>Sound</em> Sanctuary</h1>
+  <p class="sub">Solfeggio · Binaural Beats · Nature Sounds</p>
+</header>
+
+<main>
+
+  <!-- MOOD JOURNEYS -->
+  <div class="s-title">✦ Choose Your Healing Journey ✦</div>
+  <div class="moods" id="moodRow">
+    <button class="mood" data-m="sleep">🌙 Deep Sleep</button>
+    <button class="mood" data-m="heal">💚 Healing</button>
+    <button class="mood" data-m="spirit">✨ Spiritual</button>
+    <button class="mood" data-m="focus">🧠 Focus</button>
+    <button class="mood" data-m="love">💛 Heart Opening</button>
+  </div>
+
+  <!-- PLAYER -->
+  <div class="player">
+    <canvas id="vizCanvas" width="120" height="120"></canvas>
+    <div id="fBig" style="display:none">432</div>
+    <div class="f-name" id="fName">Natural Tuning</div>
+    <div class="f-desc" id="fDesc">"Restores natural harmony and deep calm"</div>
+    <div class="c-badge">
+      <div class="c-dot" id="cDot" style="background:var(--gold);box-shadow:0 0 7px var(--gold)"></div>
+      <span id="cLbl">All Chakras</span>
+    </div>
+    <div class="ctrl">
+      <button class="btn btn-sm on" id="btnLoop">⟳ Loop On</button>
+      <button class="btn btn-play" id="btnPlay">▶</button>
+      <button class="btn btn-sm" id="btnStop">■ Stop</button>
+    </div>
+    <div class="vol-row">
+      <span class="lbl">🔈</span>
+      <input type="range" id="volMain" min="0" max="1" step=".01" value=".7" style="--p:70%"/>
+      <span class="lbl">🔊</span>
+    </div>
+    <div class="timer-row">
+      <span class="lbl">Timer</span>
+      <div class="t-num" id="tDisp">—</div>
+      <button class="t-btn" data-m="5">5m</button>
+      <button class="t-btn" data-m="10">10m</button>
+      <button class="t-btn" data-m="20">20m</button>
+      <button class="t-btn" data-m="30">30m</button>
+      <button class="t-btn" id="btnClrT">×</button>
+    </div>
+  </div>
+
+  <!-- SOLFEGGIO -->
+  <div class="s-title">✦ Solfeggio Frequencies ✦</div>
+  <div class="fg" id="freqGrid"></div>
+
+  <div class="divider"></div>
+
+
+  <!-- NATURE MIXER -->
+  <div class="s-title">✦ Nature Sound Layer ✦</div>
+  <div class="mixer" id="mixGrid"></div>
+
+  <div class="divider"></div>
+
+  <!-- CHAKRA WHEEL -->
+  <div class="s-title">✦ Chakra Map ✦</div>
+  <div class="chakra-wrap">
+    <canvas id="cwCv" width="300" height="320"></canvas>
+    <p class="cw-hint">Click any chakra to tune to its sacred frequency</p>
+  </div>
+
+
+  <div class="divider"></div>
+
+  <!-- SESSION LOG -->
+  <div class="slog-wrap">
+    <div class="s-title" style="margin-bottom:14px">✦ My Healing Journey ✦</div>
+    <ul class="slog" id="slog">
+      <li><span class="slog-empty">Your sacred journey will be recorded here…</span></li>
+    </ul>
+  </div>
+
+</main>
+
+<footer>
+  With love &amp; light &nbsp;·&nbsp;
+  <a href="https://himalayanhealingschool.github.io" target="_blank">Himalayan Healing School</a>
+  <div style="margin-top:6px;font-size:10px">🎧 Use headphones for binaural beats &nbsp;·&nbsp; Best with eyes closed in a quiet space</div>
+</footer>
+
+<script>
+// ════════════════════════════════════════════════════════
+//  DATA
+// ════════════════════════════════════════════════════════
+const FREQS = [
+  {hz:174, name:'Foundation',     intent:'Relieves pain & gives deep security',      chakra:'Root',        col:'#ef4444'},
+  {hz:285, name:'Tissue Healing', intent:'Regenerates tissues & the energy field',   chakra:'Root-Sacral', col:'#f97316'},
+  {hz:396, name:'Liberation',     intent:'Releases fear, guilt & grief',             chakra:'Root',        col:'#ef4444'},
+  {hz:417, name:'Transmutation',  intent:'Undoes past patterns, facilitates change', chakra:'Sacral',      col:'#f97316'},
+  {hz:432, name:'Natural Tuning', intent:'Restores natural harmony & deep calm',     chakra:'All',         col:'#D4A558'},
+  {hz:528, name:'Miracle Tone',   intent:'DNA repair · Transformation · Love',       chakra:'Solar Plexus',col:'#eab308'},
+  {hz:639, name:'Connection',     intent:'Deepens relationships & compassion',       chakra:'Heart',       col:'#22c55e'},
+  {hz:741, name:'Awakening',      intent:'Intuition, expression & inner clarity',    chakra:'Throat',      col:'#3b82f6'},
+  {hz:852, name:'Third Eye',      intent:'Returns to spiritual order & inner wisdom',chakra:'Third Eye',   col:'#6366f1'},
+  {hz:963, name:'Crown',          intent:'Divine consciousness & universal oneness', chakra:'Crown',       col:'#c084fc'},
+];
+
+
+const NATURE = [
+  {name:'Rain',         icon:'🌧️', type:'rain' },
+  {name:'Forest',       icon:'🌿', type:'pink' },
+  {name:'Ocean Waves',  icon:'🌊', type:'ocean'},
+  {name:'Om Drone',     icon:'ॐ',  type:'om'  },
+  {name:'Gentle Wind',  icon:'💨', type:'white'},
+  {name:'Tibetan Bowl', icon:'🪘', type:'bowl' },
+];
+
+const MOODS = {
+  sleep:  {hz:396, bin:{base:200,diff:2},  nat:['Rain','Ocean Waves'],      label:'Deep Sleep'},
+  heal:   {hz:528, bin:null,              nat:['Forest','Tibetan Bowl'],   label:'Healing'},
+  spirit: {hz:963, bin:{base:200,diff:6}, nat:['Om Drone'],                label:'Spiritual Awakening'},
+  focus:  {hz:741, bin:{base:200,diff:10},nat:['Rain'],                    label:'Sacred Focus'},
+  love:   {hz:639, bin:null,              nat:['Forest','Ocean Waves'],    label:'Heart Opening'},
+};
+
+const CHAKRAS = [
+  {name:'Crown',        hz:963, col:'#c084fc'},
+  {name:'Third Eye',    hz:852, col:'#6366f1'},
+  {name:'Throat',       hz:741, col:'#3b82f6'},
+  {name:'Heart',        hz:639, col:'#22c55e'},
+  {name:'Solar Plexus', hz:528, col:'#eab308'},
+  {name:'Sacral',       hz:417, col:'#f97316'},
+  {name:'Root',         hz:396, col:'#ef4444'},
+];
+
+
+// ════════════════════════════════════════════════════════
+//  MANDALA BACKGROUND
+// ════════════════════════════════════════════════════════
+(function(){
+  const cv=document.getElementById('bg'), cx=cv.getContext('2d');
+  function rsz(){cv.width=innerWidth;cv.height=innerHeight}
+  rsz(); addEventListener('resize',rsz);
+  function draw(){
+    cx.clearRect(0,0,cv.width,cv.height);
+    const W=cv.width,H=cv.height,R=Math.min(W,H)*.40,t=Date.now()/9000;
+    for(let ring=1;ring<=3;ring++){
+      const r=R*ring*.34, n=ring*8;
+      for(let i=0;i<n;i++){
+        const a=(i/n)*Math.PI*2+t*ring;
+        cx.beginPath();
+        cx.arc(W/2+Math.cos(a)*r,H/2+Math.sin(a)*r,2+ring,0,Math.PI*2);
+        cx.fillStyle=`rgba(140,80,10,${.45-ring*.10})`;
+        cx.fill();
+      }
+    }
+    [.35,.62,.90].forEach((f,i)=>{
+      cx.beginPath(); cx.arc(W/2,H/2,R*f,0,Math.PI*2);
+      cx.strokeStyle=`rgba(140,80,10,${.18-i*.04})`; cx.lineWidth=1; cx.stroke();
+    });
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+// ════════════════════════════════════════════════════════
+//  AUDIO ENGINE
+// ════════════════════════════════════════════════════════
+let AC=null, masterG=null, analyser=null;
+let oscL=null, oscR=null;
+let playing=false, looping=true;
+let curHz=432, curCol='#D4A558', isBin=false, binD=null;
+let timerIv=null, timerSec=0;
+let slog=[];
+let nNodes={};
+
+function ac(){
+  if(!AC){
+    AC=new(window.AudioContext||window.webkitAudioContext)();
+    analyser=AC.createAnalyser(); analyser.fftSize=512;
+    masterG=AC.createGain(); masterG.gain.value=.7;
+    masterG.connect(analyser); analyser.connect(AC.destination);
+  }
+  return AC;
+}
+
+function stopMain(log){
+  if(log&&playing) addLog();
+  [oscL,oscR].forEach(o=>{if(o){try{o.stop()}catch(e){}}});
+  oscL=oscR=null; playing=false;
+  document.getElementById('btnPlay').textContent='▶';
+}
+
+function playNow(hz,col,bin=false,bd=null){
+  stopMain(true); ac();
+  if(AC.state==='suspended') AC.resume();
+  curHz=hz; curCol=col; isBin=bin; binD=bd;
+  vizCol=col;
+
+  if(bin&&bd){
+    const mg=AC.createChannelMerger(2); mg.connect(masterG);
+    oscL=AC.createOscillator(); oscL.type='sine'; oscL.frequency.value=bd.base;
+    const pL=AC.createStereoPanner(); pL.pan.value=-1;
+    oscL.connect(pL); pL.connect(mg,0,0);
+    oscR=AC.createOscillator(); oscR.type='sine'; oscR.frequency.value=bd.base+bd.diff;
+    const pR=AC.createStereoPanner(); pR.pan.value=1;
+    oscR.connect(pR); pR.connect(mg,0,1);
+    oscL.start(); oscR.start();
+  } else {
+    oscL=AC.createOscillator(); oscL.type='sine'; oscL.frequency.value=hz;
+    oscL.connect(masterG); oscL.start();
+  }
+  playing=true;
+  document.getElementById('btnPlay').textContent='⏸';
+}
+
+function togglePlay(){
+  if(playing){ AC&&AC.suspend(); playing=false; document.getElementById('btnPlay').textContent='▶'; }
+  else if(AC&&AC.state==='suspended'){ AC.resume(); playing=true; document.getElementById('btnPlay').textContent='⏸'; }
+  else playNow(curHz,curCol,isBin,binD);
+}
+
+// ── Nature noise ──────────────────────────────────────
+function mkNoiseBuf(type){
+  const a=ac(), len=a.sampleRate*4, buf=a.createBuffer(2,len,a.sampleRate);
+  for(let ch=0;ch<2;ch++){
+    const d=buf.getChannelData(ch); let last=0;
+    for(let i=0;i<len;i++){
+      const w=Math.random()*2-1;
+      if(type==='brown'){d[i]=(last+.02*w)/1.02; last=d[i]; d[i]*=3.5;}
+      else d[i]=w;
+    }
+  }
+  return buf;
+}
+
+function startNature(name,type,vol){
+  const a=ac(); if(a.state==='suspended') a.resume();
+  if(nNodes[name]) return;
+  const g=a.createGain(); g.gain.value=vol; g.connect(a.destination);
+
+  if(type==='om'){
+    const freqs=[136.1,272.2,408.3], oscs=freqs.map((f,i)=>{
+      const o=a.createOscillator(); o.type=i===2?'triangle':'sine'; o.frequency.value=f;
+      const gv=a.createGain(); gv.gain.value=[1,.5,.25][i];
+      o.connect(gv); gv.connect(g); o.start(); return o;
+    });
+    nNodes[name]={oscs,g}; return;
+  }
+  if(type==='bowl'){
+    const oscs=[432,864,1296].map((f,i)=>{
+      const o=a.createOscillator(); o.type='sine'; o.frequency.value=f;
+      const gv=a.createGain(); gv.gain.value=[1,.4,.15][i];
+      o.connect(gv); gv.connect(g); o.start(); return o;
+    });
+    nNodes[name]={oscs,g}; return;
+  }
+
+  const src=a.createBufferSource();
+  src.buffer=mkNoiseBuf(type==='rain'||type==='ocean'?'brown':'white');
+  src.loop=true;
+
+  if(type==='rain'||type==='ocean'){
+    const f=a.createBiquadFilter(); f.type='lowpass'; f.frequency.value=type==='ocean'?350:700;
+    src.connect(f); f.connect(g);
+  } else { src.connect(g); }
+  src.start();
+  nNodes[name]={src,g};
+}
+
+function stopNature(name){
+  const n=nNodes[name]; if(!n) return;
+  if(n.oscs) n.oscs.forEach(o=>{try{o.stop()}catch(e){}});
+  if(n.src) try{n.src.stop()}catch(e){}
+  delete nNodes[name];
+}
+
+function setNVol(name,v){ const n=nNodes[name]; if(n&&n.g) n.g.gain.value=v; }
+
+// ════════════════════════════════════════════════════════
+//  MANDALA VISUALIZER
+// ════════════════════════════════════════════════════════
+const vCv=document.getElementById('vizCanvas'), vCx=vCv.getContext('2d');
+let vizCol='#D4A558';
+
+function drawViz(){
+  requestAnimationFrame(drawViz);
+  const W=vCv.width,H=vCv.height,cx=W/2,cy=H/2,t=Date.now()/1000;
+  vCx.clearRect(0,0,W,H);
+
+  const N=60, data=new Uint8Array(N);
+  if(analyser&&playing) analyser.getByteFrequencyData(data);
+
+  // Petals
+  for(let i=0;i<N;i++){
+    const a=(i/N)*Math.PI*2;
+    const v=playing?data[i]/255:(0.08+0.05*Math.sin(t*1.5+i*.25));
+    const r1=18+v*30, r2=22+v*38;
+    const a2=(i+1)/N*Math.PI*2;
+    vCx.beginPath();
+    vCx.moveTo(cx,cy);
+    vCx.lineTo(cx+Math.cos(a)*r1, cy+Math.sin(a)*r1);
+    vCx.lineTo(cx+Math.cos(a2)*r2, cy+Math.sin(a2)*r2);
+    vCx.closePath();
+    const alpha=Math.round((0.28+v*.55)*255).toString(16).padStart(2,'0');
+    vCx.fillStyle=vizCol+alpha;
+    vCx.fill();
+  }
+
+  // Rings
+  [78,55,32].forEach((r,i)=>{
+    vCx.beginPath(); vCx.arc(cx,cy,r,0,Math.PI*2);
+    vCx.strokeStyle=vizCol+(i===0?'22':i===1?'33':'44');
+    vCx.lineWidth=i===2?1.5:1; vCx.stroke();
+  });
+
+  // Center glow
+  const grd=vCx.createRadialGradient(cx,cy,0,cx,cy,22);
+  grd.addColorStop(0,vizCol+'cc'); grd.addColorStop(1,'transparent');
+  vCx.beginPath(); vCx.arc(cx,cy,22,0,Math.PI*2);
+  vCx.fillStyle=grd; vCx.fill();
+}
+drawViz();
+
+// ════════════════════════════════════════════════════════
+//  CHAKRA WHEEL
+// ════════════════════════════════════════════════════════
+const cwCv=document.getElementById('cwCv'), cwCx=cwCv.getContext('2d');
+const CW=300,CH=320,CX=CW/2;
+let cwHov=-1, cwYs=[];
+
+function drawCW(){
+  cwCx.clearRect(0,0,CW,CH);
+  const y0=30, gap=(CH-60)/(CHAKRAS.length-1);
+  cwYs=CHAKRAS.map((_,i)=>y0+i*gap);
+
+  // Spine
+  cwCx.beginPath(); cwCx.moveTo(CX,y0); cwCx.lineTo(CX,y0+gap*(CHAKRAS.length-1));
+  cwCx.strokeStyle='rgba(212,165,88,.18)'; cwCx.lineWidth=2; cwCx.stroke();
+
+  CHAKRAS.forEach((ch,i)=>{
+    const y=cwYs[i], hov=cwHov===i, r=hov?30:22;
+
+    // Glow halo
+    const grd=cwCx.createRadialGradient(CX,y,0,CX,y,r+12);
+    grd.addColorStop(0,ch.col+(hov?'55':'33')); grd.addColorStop(1,'transparent');
+    cwCx.beginPath(); cwCx.arc(CX,y,r+12,0,Math.PI*2); cwCx.fillStyle=grd; cwCx.fill();
+
+    // Lotus petals
+    for(let p=0;p<8;p++){
+      const pa=(p/8)*Math.PI*2;
+      cwCx.beginPath();
+      cwCx.ellipse(CX+Math.cos(pa)*(r+7),y+Math.sin(pa)*(r+7),4,8,pa,0,Math.PI*2);
+      cwCx.fillStyle=ch.col+(hov?'55':'33'); cwCx.fill();
+    }
+
+    // Main circle
+    cwCx.beginPath(); cwCx.arc(CX,y,r,0,Math.PI*2);
+    cwCx.fillStyle=ch.col+(hov?'cc':'88'); cwCx.fill();
+    cwCx.strokeStyle=ch.col; cwCx.lineWidth=2; cwCx.stroke();
+
+    // Label
+    cwCx.font=`${hov?'500 ':'300 '}11px Raleway,sans-serif`;
+    cwCx.textAlign='center'; cwCx.textBaseline='middle';
+    cwCx.fillStyle=hov?ch.col:'rgba(240,222,188,.65)';
+    cwCx.fillText(`${ch.name}  ·  ${ch.hz} Hz`, CX, y+r+16);
+  });
+}
+drawCW();
+
+cwCv.addEventListener('mousemove',e=>{
+  const rc=cwCv.getBoundingClientRect();
+  const mx=(e.clientX-rc.left)*(CW/rc.width),my=(e.clientY-rc.top)*(CH/rc.height);
+  cwHov=cwYs.findIndex(y=>Math.hypot(mx-CX,my-y)<32);
+  drawCW();
+});
+cwCv.addEventListener('mouseleave',()=>{cwHov=-1;drawCW()});
+cwCv.addEventListener('click',e=>{
+  const rc=cwCv.getBoundingClientRect();
+  const mx=(e.clientX-rc.left)*(CW/rc.width),my=(e.clientY-rc.top)*(CH/rc.height);
+  const idx=cwYs.findIndex(y=>Math.hypot(mx-CX,my-y)<32);
+  if(idx<0) return;
+  const ch=CHAKRAS[idx];
+  const f=FREQS.find(f=>f.hz===ch.hz)||{hz:ch.hz,name:ch.name,intent:'Sacred healing frequency',chakra:ch.name,col:ch.col};
+  pickFreq(f);
+});
+
+// ════════════════════════════════════════════════════════
+//  RENDER GRIDS
+// ════════════════════════════════════════════════════════
+const favs=new Set();
+
+function setNowPlaying(hz,name,intent,chakra,col){
+  document.getElementById('fBig').innerHTML=`${hz} <span class="u">Hz</span>`;
+  document.getElementById('fName').textContent=name;
+  document.getElementById('fDesc').textContent=`"${intent}"`;
+  document.getElementById('cLbl').textContent=`${chakra} Chakra`;
+  const cd=document.getElementById('cDot');
+  cd.style.background=col; cd.style.boxShadow=`0 0 7px ${col}`;
+  vizCol=col;
+}
+
+function clearAllActive(){
+  document.querySelectorAll('.fc,.mood').forEach(c=>c.classList.remove('on'));
+}
+
+function pickFreq(f){
+  const card=document.querySelector(`.fc[data-hz="${f.hz}"]`);
+  // TOGGLE OFF — clicking the same frequency again stops everything
+  if(card && card.classList.contains('on')){
+    stopMain(true);
+    clearAllActive();
+    return;
+  }
+  setNowPlaying(f.hz,f.name,f.intent,f.chakra,f.col);
+  playNow(f.hz,f.col);
+  clearAllActive();
+  if(card) card.classList.add('on');
+}
+
+function renderFreqs(){
+  const g=document.getElementById('freqGrid'); g.innerHTML='';
+  FREQS.forEach(f=>{
+    const d=document.createElement('div');
+    d.className='fc'+(f.hz===432?' on':'');
+    d.dataset.hz=f.hz;
+    d.style.setProperty('--cc',f.col+'22');
+    d.innerHTML=`
+      <button class="fav" title="Favourite">♡</button>
+      <div class="fc-head">
+        <div class="fc-dot" style="background:${f.col};box-shadow:0 0 6px ${f.col}"></div>
+        <div class="fc-lbl">${f.name}</div>
+      </div>
+      <div class="fc-int">${f.intent}</div>
+      <div class="fc-ch">${f.chakra} Chakra</div>`;
+    d.querySelector('.fav').addEventListener('click',e=>{
+      e.stopPropagation();
+      const btn=e.currentTarget;
+      if(favs.has(f.hz)){favs.delete(f.hz);btn.textContent='♡';btn.classList.remove('on');}
+      else{favs.add(f.hz);btn.textContent='♥';btn.classList.add('on');}
+    });
+    d.addEventListener('click',()=>pickFreq(f));
+    g.appendChild(d);
+  });
+}
+
+
+function renderMixer(){
+  const g=document.getElementById('mixGrid'); g.innerHTML='';
+  NATURE.forEach(n=>{
+    const d=document.createElement('div'); d.className='mc';
+    d.innerHTML=`
+      <div class="mc-icon">${n.icon}</div>
+      <div class="mc-name">${n.name}</div>
+      <input class="mix-sl" type="range" min="0" max="1" step=".02" value="0" style="--p:0%"/>
+      <button class="mix-tog">Off</button>`;
+    const sl=d.querySelector('.mix-sl'), tog=d.querySelector('.mix-tog');
+    sl.addEventListener('input',function(){
+      this.style.setProperty('--p',this.value*100+'%');
+      if(nNodes[n.name]) setNVol(n.name,+this.value);
+    });
+    tog.addEventListener('click',function(){
+      if(this.classList.contains('on')){
+        stopNature(n.name); this.classList.remove('on'); this.textContent='Off';
+      } else {
+        const v=+sl.value||0.3; sl.value=v; sl.style.setProperty('--p',v*100+'%');
+        startNature(n.name,n.type,v); this.classList.add('on'); this.textContent='On';
+      }
+    });
+    g.appendChild(d);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+//  MOOD PRESETS
+// ════════════════════════════════════════════════════════
+document.getElementById('moodRow').addEventListener('click',e=>{
+  const btn=e.target.closest('.mood'); if(!btn) return;
+  const m=MOODS[btn.dataset.m]; if(!m) return;
+
+  // TOGGLE OFF — if already active, stop everything and reset
+  if(btn.classList.contains('on')){
+    stopMain(true);
+    clearTimer();
+    Object.keys(nNodes).forEach(stopNature);
+    document.querySelectorAll('.mix-tog').forEach(b=>{b.classList.remove('on');b.textContent='Off'});
+    document.querySelectorAll('.mix-sl').forEach(s=>{s.value=0;s.style.setProperty('--p','0%')});
+    clearAllActive();
+    return;
+  }
+
+  document.querySelectorAll('.mood').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+
+  const f=FREQS.find(x=>x.hz===m.hz)||FREQS[4];
+  setNowPlaying(f.hz,f.name,f.intent,f.chakra,f.col);
+
+  if(m.bin) playNow(m.bin.base,f.col,true,m.bin);
+  else playNow(f.hz,f.col);
+
+  document.querySelectorAll('.fc').forEach(c=>c.classList.remove('on'));
+  const fc=document.querySelector(`.fc[data-hz="${f.hz}"]`); if(fc) fc.classList.add('on');
+
+  // Reset nature sounds
+  Object.keys(nNodes).forEach(stopNature);
+  document.querySelectorAll('.mix-tog').forEach(b=>{b.classList.remove('on');b.textContent='Off'});
+
+  m.nat.forEach(nm=>{
+    const ni=NATURE.find(x=>x.name===nm); if(!ni) return;
+    startNature(nm,ni.type,.3);
+    const card=document.querySelector(`#mixGrid .mc:nth-child(${NATURE.indexOf(ni)+1})`);
+    if(card){
+      card.querySelector('.mix-tog').classList.add('on');
+      card.querySelector('.mix-tog').textContent='On';
+      const sl=card.querySelector('.mix-sl'); sl.value=.3; sl.style.setProperty('--p','30%');
+    }
+  });
+});
+
+// ════════════════════════════════════════════════════════
+//  CONTROLS
+// ════════════════════════════════════════════════════════
+document.getElementById('btnPlay').addEventListener('click',togglePlay);
+document.getElementById('btnStop').addEventListener('click',()=>{
+  stopMain(true);
+  clearTimer();
+  // Stop ALL nature sounds immediately
+  Object.keys(nNodes).forEach(stopNature);
+  document.querySelectorAll('.mix-tog').forEach(b=>{b.classList.remove('on');b.textContent='Off'});
+  document.querySelectorAll('.mix-sl').forEach(s=>{s.value=0;s.style.setProperty('--p','0%')});
+  clearAllActive();
+});
+document.getElementById('btnLoop').addEventListener('click',function(){
+  looping=!looping; this.classList.toggle('on',looping);
+  this.textContent=looping?'⟳ Loop On':'⟳ Loop';
+});
+document.getElementById('volMain').addEventListener('input',function(){
+  if(masterG) masterG.gain.value=+this.value;
+  this.style.setProperty('--p',+this.value*100+'%');
+});
+
+// Timer
+function clearTimer(){
+  if(timerIv){clearInterval(timerIv);timerIv=null}
+  timerSec=0; document.getElementById('tDisp').textContent='—';
+  document.querySelectorAll('.t-btn[data-m]').forEach(b=>b.classList.remove('sel'));
+}
+function startTimer(mins){
+  clearTimer(); timerSec=mins*60;
+  document.querySelector(`.t-btn[data-m="${mins}"]`).classList.add('sel');
+  const tick=()=>{
+    document.getElementById('tDisp').textContent=`${Math.floor(timerSec/60)}:${(timerSec%60).toString().padStart(2,'0')}`;
+    if(timerSec--<=0){clearInterval(timerIv);timerIv=null;stopMain(true);document.getElementById('tDisp').textContent='✦ Done'}
+  };
+  tick(); timerIv=setInterval(tick,1000);
+}
+document.querySelectorAll('.t-btn[data-m]').forEach(b=>b.addEventListener('click',()=>startTimer(+b.dataset.m)));
+document.getElementById('btnClrT').addEventListener('click',clearTimer);
+
+
+// ════════════════════════════════════════════════════════
+//  SESSION LOG
+// ════════════════════════════════════════════════════════
+function addLog(){
+  const nm=document.getElementById('fName').textContent;
+  const hz=document.getElementById('fBig').textContent.trim();
+  const t=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  slog.unshift({t,nm,hz});
+  const ul=document.getElementById('slog');
+  ul.innerHTML=slog.map(e=>`<li><span>${e.nm} · ${e.hz}</span><span class="slog-t">${e.t}</span></li>`).join('');
+}
+
+// ════════════════════════════════════════════════════════
+//  INIT
+// ════════════════════════════════════════════════════════
+renderFreqs(); renderMixer();
+setNowPlaying(432,'Natural Tuning','Restores natural harmony and deep calm','All','#D4A558');
+
+// Register service worker for offline / PWA install
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
