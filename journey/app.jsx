@@ -34,7 +34,7 @@ const Hero = ({ onBegin }) => {
         <Mandala size={900} rings={6} petals={24} opacity={0.07} spin={300} />
       </div>
 
-      <div style={{
+      <div className="hero-grid" style={{
         position: 'relative',
         zIndex: 2,
         display: 'grid',
@@ -580,10 +580,10 @@ const ProgressMarker = ({ stops, activeId, onPick }) => (
 
 /* ---------------- App ---------------- */
 const App = () => {
-  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 1024);
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    const handleResize = () => setIsMobile(window.innerWidth < 1024);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);

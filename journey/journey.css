@@ -192,40 +192,39 @@ body.texture-strong::before { opacity: 1; }
 /* Selection */
 ::selection { background: var(--saffron); color: var(--ink); }
 
-/* ===== MOBILE RESPONSIVE ===== */
-@media (max-width: 768px) {
 
-  /* Hide the fixed right-side chapter navigation on mobile */
+/* ===== MOBILE RESPONSIVE ===== */
+
+/* Hide progress nav on anything below 1024px */
+@media (max-width: 1024px) {
   [data-progress-rail] {
     display: none !important;
   }
+}
 
-  /* Stack chapter grid to single column */
+/* Stack layout on mobile/tablet */
+@media (max-width: 900px) {
+  /* Stack hero to single column */
+  .hero-grid {
+    grid-template-columns: 1fr !important;
+    gap: 32px !important;
+  }
+
+  /* Stack chapter to single column */
   .chapter-grid {
     grid-template-columns: 1fr !important;
     direction: ltr !important;
-    gap: 32px !important;
+    gap: 28px !important;
     padding: 0 5vw !important;
   }
 
-  /* Reduce chapter padding */
   .chapter {
     padding: 60px 0 !important;
   }
 
-  /* Fix photo frame on mobile */
   .photo-frame {
     transform: rotate(0deg) !important;
   }
 
-  /* Field notes & content blocks */
-  .chapter-content {
-    direction: ltr !important;
-  }
-
-  /* Hero text sizing */
-  h1 { font-size: clamp(2.5rem, 10vw, 5rem) !important; }
-
-  /* Reduce font size slightly */
   html, body { font-size: 16px; }
 }
