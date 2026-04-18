@@ -312,7 +312,7 @@ const MapSection = ({ stops, activeId, onPinClick, scrollToStop }) => {
 };
 
 /* ---------------- Closing ---------------- */
-const Closing = () => (
+const Closing = ({ isMobile }) => (
   <section style={{
     padding: '140px 6vw 120px',
     position: 'relative',
@@ -336,8 +336,8 @@ const Closing = () => (
       maxWidth: 1100,
       margin: '0 auto',
       display: 'grid',
-      gridTemplateColumns: '1fr 1.2fr',
-      gap: 80,
+      gridTemplateColumns: isMobile ? '1fr' : '1fr 1.2fr',
+      gap: isMobile ? 32 : 80,
       alignItems: 'center',
     }}>
       {/* Husband polaroid */}
@@ -346,7 +346,7 @@ const Closing = () => (
           background: 'var(--parchment)',
           padding: '14px 14px 52px',
           boxShadow: '0 24px 60px rgba(58,42,34,0.22)',
-          transform: 'rotate(-2.5deg)',
+          transform: isMobile ? 'none' : 'rotate(-2.5deg)',
           position: 'relative',
         }}>
           <img
@@ -712,7 +712,7 @@ const App = () => {
         ))}
       </div>
 
-      <Closing />
+      <Closing isMobile={isMobile} />
 
       {!isMobile && <ProgressMarker
         stops={JOURNEY}
