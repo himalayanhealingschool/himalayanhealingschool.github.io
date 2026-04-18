@@ -528,7 +528,7 @@ const TweaksPanel = ({ open, onClose, state, onChange }) => (
 
 /* ---------------- Progress marker ---------------- */
 const ProgressMarker = ({ stops, activeId, onPick }) => (
-  <div style={{
+  <div data-progress-rail="" style={{
     position: 'fixed',
     top: '50%',
     right: 20,
@@ -580,6 +580,13 @@ const ProgressMarker = ({ stops, activeId, onPick }) => (
 
 /* ---------------- App ---------------- */
 const App = () => {
+  const [isMobile, setIsMobile] = useState(typeof window !== "undefined" && window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
   const [activeId, setActiveId] = useState(JOURNEY[0].id);
   const [soundPlayingId, setSoundPlayingId] = useState(null);
   const [tweaksOpen, setTweaksOpen] = useState(false);
@@ -706,11 +713,11 @@ const App = () => {
 
       <Closing />
 
-      <ProgressMarker
+      {!isMobile && <ProgressMarker
         stops={JOURNEY}
         activeId={activeId}
         onPick={scrollToStop}
-      />
+      />}
 
       <TweaksPanel
         open={tweaksOpen}

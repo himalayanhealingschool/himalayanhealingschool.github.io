@@ -35,7 +35,7 @@ const Chapter = ({ stop, index, total, active, registerRef, soundPlaying, onTogg
         {String(index + 1).padStart(2, '0')}
       </div>
 
-      <div style={{
+      <div className="chapter-grid" style={{
         display: 'grid',
         gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.1fr)',
         gap: '60px',
