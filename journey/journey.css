@@ -1,0 +1,193 @@
+/* Mukun's Journey — Earthy Himalayan journal */
+
+:root {
+  --clay: #c96a3d;
+  --clay-deep: #9a4a28;
+  --saffron: #d4a24c;
+  --saffron-soft: #e4be7a;
+  --stone: #a8998a;
+  --stone-light: #cabfae;
+  --umber: #3a2a22;
+  --umber-soft: #5a4638;
+  --ink: #2a1f18;
+  --parchment: #f5ead7;
+  --parchment-soft: #faf2e1;
+  --parchment-deep: #ebdcc0;
+  --moss: #6b7a5a;
+  --indigo: #3d4568;
+  --rose: #a86e6e;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(232, 184, 184, 0.55) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 0%, rgba(184, 196, 212, 0.45) 0%, transparent 45%),
+    radial-gradient(ellipse at 100% 100%, rgba(143, 178, 137, 0.35) 0%, transparent 50%),
+    radial-gradient(ellipse at 0% 100%, rgba(232, 184, 150, 0.45) 0%, transparent 50%),
+    var(--parchment);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.55;
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* Paper grain overlay */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(154, 74, 40, 0.04) 0, transparent 40%),
+    radial-gradient(circle at 80% 70%, rgba(107, 122, 90, 0.04) 0, transparent 40%),
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/><feColorMatrix values='0 0 0 0 0.25  0 0 0 0 0.18  0 0 0 0 0.12  0 0 0 0.08 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  opacity: 0.9;
+  z-index: 1;
+}
+
+/* All content above grain */
+#root { position: relative; z-index: 2; }
+
+.handwrite {
+  font-family: 'Caveat', cursive;
+  font-weight: 500;
+}
+
+.mono {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.serif-display {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+
+/* Tweaks panel */
+.tweaks-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  background: var(--parchment-soft);
+  border: 1px solid var(--umber-soft);
+  border-radius: 4px;
+  padding: 20px 22px;
+  width: 300px;
+  box-shadow: 0 20px 60px rgba(58, 42, 34, 0.25);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--umber);
+  display: none;
+}
+.tweaks-panel.open { display: block; }
+.tweaks-panel h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 18px;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--parchment-deep);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tweaks-panel label {
+  display: block;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10px;
+}
+.tweaks-panel label span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--umber-soft);
+}
+.tweak-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.tweak-chip {
+  padding: 5px 10px;
+  border: 1px solid var(--stone);
+  background: transparent;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--umber);
+  transition: all 0.2s;
+}
+.tweak-chip:hover { background: var(--parchment-deep); }
+.tweak-chip.active { background: var(--umber); color: var(--parchment); border-color: var(--umber); }
+.tweak-chip.swatch { padding: 0; width: 22px; height: 22px; border-radius: 50%; }
+.tweaks-panel input[type=range] { width: 100%; accent-color: var(--clay); }
+
+/* Palette variants */
+body.palette-clay {
+  --clay: #c96a3d; --saffron: #d4a24c; --moss: #6b7a5a;
+  --parchment: #f5ead7; --parchment-soft: #faf2e1; --parchment-deep: #ebdcc0;
+  --ink: #2a1f18; --umber: #3a2a22; --stone: #a8998a;
+}
+body.palette-pranam {
+  --clay: #d99a8a;        /* dusty rose */
+  --clay-deep: #b06f60;
+  --saffron: #f0c9a8;     /* peach */
+  --saffron-soft: #f7e0cd;
+  --moss: #a8c4a2;        /* sage */
+  --stone: #c9c1b5;
+  --stone-light: #e6dfd2;
+  --umber: #4a3d36;
+  --umber-soft: #6b5d54;
+  --ink: #3a2f29;
+  --parchment: #f5ece1;   /* warm cream */
+  --parchment-soft: #faf3e8;
+  --parchment-deep: #ebe1d2;
+  --indigo: #b8a8c7;      /* soft lavender */
+  --rose: #e8b8b8;
+}
+body.palette-dusk {
+  --clay: #a86e6e; --saffron: #c9a06a; --moss: #6c6784;
+  --parchment: #efe6df; --parchment-soft: #f6efe8; --parchment-deep: #e3d6cb;
+  --ink: #2b2130; --umber: #3d2f3a; --stone: #998a8a;
+}
+body.palette-stone {
+  --clay: #8a7a5c; --saffron: #b09968; --moss: #7a8a6c;
+  --parchment: #efece3; --parchment-soft: #f5f2ea; --parchment-deep: #e2ddd0;
+  --ink: #2a2820; --umber: #3a372c; --stone: #aaa090;
+}
+body.palette-charcoal {
+  --clay: #d48560; --saffron: #e0b278; --moss: #8a9679;
+  --parchment: #22201b; --parchment-soft: #2a2823; --parchment-deep: #34302a;
+  --ink: #f0e5d0; --umber: #e8d9ba; --stone: #8a7f70;
+}
+
+/* Type variants */
+body.type-classic { --font-display: 'Cormorant Garamond', serif; --font-hand: 'Caveat', cursive; }
+body.type-editorial { --font-display: 'Fraunces', serif; --font-hand: 'Homemade Apple', cursive; }
+body.type-humanist { --font-display: 'Gloock', serif; --font-hand: 'Kalam', cursive; }
+
+body { font-family: var(--font-display, 'Cormorant Garamond'), Georgia, serif; }
+.handwrite { font-family: var(--font-hand, 'Caveat'), cursive; }
+
+/* Density */
+body.density-airy .chapter { padding: 160px 0; }
+body.density-comfortable .chapter { padding: 100px 0; }
+body.density-dense .chapter { padding: 64px 0; }
+
+/* Texture */
+body.texture-off::before { display: none; }
+body.texture-subtle::before { opacity: 0.5; }
+body.texture-strong::before { opacity: 1; }
+
+/* Selection */
+::selection { background: var(--saffron); color: var(--ink); }
