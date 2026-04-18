@@ -1,6 +1,6 @@
 /* Chapter component — one stop in the journey */
 
-const Chapter = ({ stop, index, total, active, registerRef, soundPlaying, onToggleSound }) => {
+const Chapter = ({ stop, index, total, active, registerRef, soundPlaying, onToggleSound, isMobile }) => {
   const ref = React.useRef(null);
   React.useEffect(() => { if (ref.current) registerRef(stop.id, ref.current); }, []);
 
@@ -37,13 +37,13 @@ const Chapter = ({ stop, index, total, active, registerRef, soundPlaying, onTogg
 
       <div className="chapter-grid" style={{
         display: 'grid',
-        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1.1fr)',
-        gap: '60px',
+        gridTemplateColumns: isMobile ? '1fr' : 'minmax(0, 1fr) minmax(0, 1.1fr)',
+        gap: isMobile ? '28px' : '60px',
         maxWidth: 1200,
         margin: '0 auto',
-        padding: '0 6vw',
+        padding: '0 5vw',
         alignItems: 'start',
-        direction: isEven ? 'ltr' : 'rtl',
+        direction: isMobile ? 'ltr' : (isEven ? 'ltr' : 'rtl'),
       }}>
         {/* LEFT: IMAGE + STAMP */}
         <div style={{ direction: 'ltr', position: 'relative' }}>

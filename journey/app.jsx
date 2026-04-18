@@ -11,7 +11,7 @@ const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
 }/*EDITMODE-END*/;
 
 /* ---------------- Hero ---------------- */
-const Hero = ({ onBegin }) => {
+const Hero = ({ onBegin, isMobile }) => {
   return (
     <section style={{
       minHeight: '100vh',
@@ -38,8 +38,8 @@ const Hero = ({ onBegin }) => {
         position: 'relative',
         zIndex: 2,
         display: 'grid',
-        gridTemplateColumns: '1fr 1.2fr',
-        gap: '80px',
+        gridTemplateColumns: isMobile ? '1fr' : '1fr 1.2fr',
+        gap: isMobile ? '32px' : '80px',
         alignItems: 'center',
         maxWidth: 1300,
         margin: '0 auto',
@@ -668,7 +668,7 @@ const App = () => {
 
   return (
     <>
-      <Hero onBegin={handleBegin} />
+      <Hero onBegin={handleBegin} isMobile={isMobile} />
       <MapSection
         stops={JOURNEY}
         activeId={activeId}
@@ -687,6 +687,7 @@ const App = () => {
               registerRef={registerRef}
               soundPlaying={soundPlayingId === stop.id}
               onToggleSound={(id) => setSoundPlayingId(prev => prev === id ? null : id)}
+              isMobile={isMobile}
             />
             {i < JOURNEY.length - 1 && (
               <div style={{
